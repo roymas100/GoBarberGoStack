@@ -3,6 +3,8 @@ import User from '../models/User';
 
 class UserController {
   async store(req, res) {
+    // Validar se as informações foram inseridas corretamente
+
     const schema = Yup.object().shape({
       name: Yup.string().required(),
       email: Yup.string()
@@ -22,11 +24,15 @@ class UserController {
         .json({ error: 'You must fulfil all fields correctly' });
     }
 
+    // Checar se ja existe usuario com msm email na tabela
+
     const userExists = await User.findOne({ where: { email: req.body.email } });
 
     if (userExists) {
       return res.status(400).json({ err: 'User already exist.' });
     }
+
+    // Criar usuario
 
     const { id, name, email, provider } = await User.create(req.body);
 
@@ -38,7 +44,10 @@ class UserController {
     });
   }
 
+  // Mudar informações do usuario
+
   async update(req, res) {
+    // Validar se as informações foram inseridas corretamente
     const schema = Yup.object().shape({
       name: Yup.string(),
       email: Yup.string().email(),
@@ -59,7 +68,11 @@ class UserController {
         .json({ error: 'You must fulfil all fields correctly' });
     }
 
+    // buscar informações no body
+
     const { email, oldPassword } = req.body;
+
+    // Buscar e selecionar o usuario na tabela
 
     const user = await User.findByPk(req.userId);
 
