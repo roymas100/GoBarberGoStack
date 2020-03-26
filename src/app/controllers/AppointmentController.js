@@ -6,7 +6,9 @@ import User from '../models/User';
 import File from '../models/File';
 import Appointment from '../models/Appointment';
 import Notification from '../schemas/Notification';
-import mail from '../../lib/mail';
+// import mail from '../../lib/Mail';
+import CancellationMail from '../jobs/CancellationMail';
+import Queue from '../../lib/Queue';
 
 class AppointmentController {
   async index(req, res) {
@@ -19,7 +21,7 @@ class AppointmentController {
       limit: 20,
       offset: (page - 1) * 20,
       order: ['date'],
-      attributes: ['id', 'date'],
+      attributes: ['id', 'date', 'past', 'cancelable'],
       include: [
         {
           model: User,
@@ -92,7 +94,7 @@ class AppointmentController {
     });
 
     if (checkAvailability) {
-      res.status(400).json({
+      return res.status(400).json({
         error: 'It is not possible to create a appointment on this hour/date',
       });
     }
@@ -158,17 +160,8 @@ class AppointmentController {
 
     await appointment.save();
 
-    await mail.sendMail({
-      to: `${appointment.provider.name} ${appointment.provider.email}`,
-      subject: 'Agendamento Cancelado',
-      template: 'cancellation',
-      context: {
-        provider: appointment.provider.name,
-        user: appointment.user.name,
-        date: format(appointment.date, "'dia' dd 'de' MMMM', às ' H:mm'h'", {
-          locale: pt,
-        }),
-      },
+    await Queue.add(CancellationMail.key, {
+      appointment,
     });
 
     return res.json(appointment);
