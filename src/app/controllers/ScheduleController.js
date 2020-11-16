@@ -26,9 +26,16 @@ class Schedule {
           [Op.between]: [startOfDay(parsedDate), endOfDay(parsedDate)],
         },
       },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name'],
+        },
+      ],
     });
 
-    res.json(appointments);
+    return res.json(appointments);
   }
 }
 

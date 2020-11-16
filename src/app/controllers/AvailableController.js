@@ -21,7 +21,7 @@ class AvailableController {
 
     const searchDate = Number(date);
 
-    const appointments = await Appointment.finddAll({
+    const appointments = await Appointment.findAll({
       where: {
         provider_id: req.params.providerId,
         canceled_at: null,
@@ -44,6 +44,9 @@ class AvailableController {
       '17:00',
       '18:00',
       '19:00',
+      '20:00',
+      '21:00',
+      '22:00',
     ];
 
     const available = schelude.map(time => {
